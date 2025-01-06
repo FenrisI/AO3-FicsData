@@ -137,7 +137,7 @@ def chapterWords():
     #getting rid of punctuations
     for c in punctuation_1:
             output = output.replace(c," ")
-        for c in punctuation_2:
+    for c in punctuation_2:
             output = output.replace(c,"")
     return (len(output.split())-2) #because the find function takes 2 extra words
 
