@@ -133,10 +133,10 @@ def chapterWords():
     output = chapter.text 
     output = output.lower()
     #getting rid of punctuations
-    for c in punctuation:
-        output = output.replace(c," ")
-    output = output.replace("\n",'')
-
+    for c in punctuation_1:
+            output = output.replace(c," ")
+        for c in punctuation_2:
+            output = output.replace(c,"")
     return (len(output.split())-2) #because the find function takes 2 extra words
 
 def WordFreq(ficLink):
@@ -172,8 +172,7 @@ def PunctuationFrequency():
         output = output.replace(c,f"{c} ")
     return output.split()
 
-def graphBar(dic,title,xLab,counts):
-    
+def graphBar(dic,title,xLab,counts):    
     plt.bar(x=dic.keys(),height=dic.values(),color="#12ACAE")
     plt.title(title)
     plt.xlabel(xLab)
@@ -192,30 +191,20 @@ if __name__ == "__main__":
     while findNext(ficLink) != None:
         Fic = requests.get(site+ficLink)
         soup = BS(Fic.text, "html.parser")
-        for i in PunctuationFrequency():
-            if i in puncs:
-                puncs[i]+=1
-            else:
-                puncs[i]=1
-            print(puncs)
-        #counts.append(chapterWords())
+        counts.append(chapterWords())
         ficLink = findNext(ficLink)
-
- #–-
-
 
     plt.style.use('classic')
     plt.rcParams["figure.dpi"] = 150
-    #plt.tight_layout(pad=2.5)
-    #plt.plot([i for i in range(1,len(counts)+1)],counts, color="#12ACAE")
-    #graphBar(puncs, f"{title}", "Punctuation", counts)
-    #plt.xlim(1, len(counts)+1)
-    #plt.ylim(0, max(counts)+2000)
-    #plt.title(title)
-    #
-    #plt.xlabel('Chapter')
-    #plt.ylabel('Words')
-    #plt.grid()
-    #plt.savefig(f"{title}_{len(counts)}.png")
+    plt.tight_layout(pad=2.5)
+    plt.plot([i for i in range(1,len(counts)+1)],counts, color="#12ACAE")
+    plt.xlim(1, len(counts)+1)
+    plt.ylim(0, max(counts)+2000)
+    plt.title(title)
+    
+    plt.xlabel('Chapter')
+    plt.ylabel('Words')
+    plt.grid()
+    plt.savefig(f"{title}_{len(counts)}.png")
 
-    #plt.show()
+    plt.show()
