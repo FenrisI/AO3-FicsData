@@ -6,12 +6,14 @@ from pandas import DataFrame
 import string
 
 
+punctuation_1='!"#$%&()*+,–—./:;<=>?@[\\]^_`{|}~”“…\n'
+punctuation_2="-'‘’\xa0\t"
 
-punctuation='!"#$%&\'()*+,-–—./:;<=>?@[\\]^_`{|}~’‘”“…\n\xa0'
-letters="abcdefghijklmnopqrstuvwxyzéà0123456789éàüä"
+letters="abcdefghijklmnopqrstuvwxyz1234567890"
 letterTTable = dict.fromkeys(map(ord, letters), None)
-puncTTable = dict.fromkeys(map(ord, punctuation), " ")
-site = "https://archiveofourown.org"
+puncTTable = dict.fromkeys(map(ord, punctuation_1), " ")
+for c in punctuation_2:
+    puncTTable[ord(c)]=None
 
 #put the suffix of the fic here
 ficLink = "/works/45479821/chapters/114431764"
