@@ -7,14 +7,19 @@ import string
 import time
 
 def get(ficLink):
-    FIC = s.get(site+ficLink)
+    FIC=s.get(site+ficLink)
+
     while FIC.ok == False:
 
-            if FIC.status_code in [400,401,402,403,404,405] :
-                break
-            else:
-                print("Retrying...")
-                FIC=s.get(site+ficLink)
+        if FIC.status_code in [404] :
+            break
+        elif FIC.status_code == 429:
+            print("waiting...")
+            time.sleep(5)
+            FIC=s.get(site+ficLink)
+        else:
+            print("Retrying...")
+            FIC=s.get(site+ficLink)
     return FIC
     
 punctuation_1='!"#$%&()*+,–—./:;<=>?@[\\]^_`{|}~”“…\n'
@@ -33,8 +38,8 @@ s.cookies.update({'view_adult':'true'})
 #put the suffix of the fic here
 site="https://archiveofourown.org"
 ficLink = "/works/56064253/chapters/142397071"
-Fic = s.get(site+ficLink)
-soup = BS(Fic.text, "html.parser")
+FIC = s.get(site+ficLink)
+soup = BS(FIC.text, "html.parser")
 
 class fic:
     def __init__(self,ficLink):
@@ -226,15 +231,8 @@ if __name__ == "__main__":
     while findNext(ficLink) != None:
         print(f"Number of chapters remaining: {chapters}")
         
-        FIC=s.get(site+ficLink)
-        while FIC.ok == False:
+        FIC=get(ficLink)
 
-            if FIC.status_code in [400,401,402,403,404,405] :
-                break
-            else:
-                print(f"Status Code: {FIC.status_code}")
-                print("Retrying...")
-                FIC=s.get(site+ficLink)
             
         soup = BS(FIC.text, "html.parser")
         
