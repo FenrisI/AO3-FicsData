@@ -218,7 +218,12 @@ if __name__ == "__main__":
         
         FIC=s.get(site+ficLink)
         while FIC.ok == False:
-            FIC=s.get(site+ficLink)
+
+            if Fic.status_code in [400,401,402,403,404,405] :
+                break
+            else:
+                print("Retrying...")
+                FIC=s.get(site+ficLink)
             
         soup = BS(FIC.text, "html.parser")
         
