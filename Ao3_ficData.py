@@ -6,7 +6,22 @@ from pandas import DataFrame
 import string
 import time
 
+def get(ficLink):
+    FIC=s.get(site+ficLink)
 
+    while FIC.ok == False:
+
+        if FIC.status_code in [400,401,402,403,404] :
+            break
+        elif FIC.status_code == 429:
+            print("waiting...")
+            time.sleep(5)
+            FIC=s.get(site+ficLink)
+        else:
+            print("Retrying...")
+            FIC=s.get(site+ficLink)
+    return FIC
+    
 punctuation_1='!"#$%&()*+,–—./:;<=>?@[\\]^_`{|}~”“…\n'
 punctuation_2="-'‘’\xa0\t"
 
@@ -17,22 +32,18 @@ for c in punctuation_2:
     puncTTable[ord(c)]=None
 
 s = requests.session()
-s.headers.update({
-    'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0',
-    'DNT':'1',
-    'Accept-Language':'en-US,en:1=0.5',
-    'Referer':'https://archiveofourown.org/works'})
+s.headers.update({'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', 'DNT':'1', 'Accept-Language':'en-US,en:1=0.5', 'Referer':'https://archiveofourown.org/works'})
 s.cookies.update({'view_adult':'true'})
 
 #put the suffix of the fic here
 site="https://archiveofourown.org"
 ficLink = "/works/56064253/chapters/142397071"
-Fic = s.get(site+ficLink)
-soup = BS(Fic.text, "html.parser")
+FIC = s.get(site+ficLink)
+soup = BS(FIC.text, "html.parser")
 
 class fic:
     def __init__(self,ficLink):
-        soup = BS(s.get(site+ficLink).text, "html.parser")
+        soup = BS(get(ficLink).text, "html.parser")
 
         #titles and authors
         self.title = soup.find('h2').text.replace("\n",'').strip()
@@ -220,13 +231,9 @@ if __name__ == "__main__":
     while findNext(ficLink) != None:
         print(f"Number of chapters remaining: {chapters}")
         
-        FIC=s.get(site+ficLink)
-        while FIC.ok == False:
-            if Fic.status_code in [400,401,402,403,404,405] :
-                break
-            else:
-                FIC=s.get(site+ficLink)
-           
+        FIC=get(ficLink)
+
+            
         soup = BS(FIC.text, "html.parser")
         
         counts.append(chapterWords())
