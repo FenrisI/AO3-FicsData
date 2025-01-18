@@ -6,7 +6,17 @@ from pandas import DataFrame
 import string
 import time
 
+def get(ficLink):
+    FIC = s.get(site+ficLink)
+    while FIC.ok == False:
 
+            if FIC.status_code in [400,401,402,403,404,405] :
+                break
+            else:
+                print("Retrying...")
+                FIC=s.get(site+ficLink)
+    return FIC
+    
 punctuation_1='!"#$%&()*+,–—./:;<=>?@[\\]^_`{|}~”“…\n'
 punctuation_2="-'‘’\xa0\t"
 
@@ -28,7 +38,7 @@ soup = BS(Fic.text, "html.parser")
 
 class fic:
     def __init__(self,ficLink):
-        soup = BS(s.get(site+ficLink).text, "html.parser")
+        soup = BS(get(ficLink).text, "html.parser")
 
         #titles and authors
         self.title = soup.find('h2').text.replace("\n",'').strip()
@@ -219,9 +229,10 @@ if __name__ == "__main__":
         FIC=s.get(site+ficLink)
         while FIC.ok == False:
 
-            if Fic.status_code in [400,401,402,403,404,405] :
+            if FIC.status_code in [400,401,402,403,404,405] :
                 break
             else:
+                print(f"Status Code: {FIC.status_code}")
                 print("Retrying...")
                 FIC=s.get(site+ficLink)
             
