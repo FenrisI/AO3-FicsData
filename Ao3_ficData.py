@@ -4,6 +4,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from pandas import DataFrame
 import string
+import time
 
 
 punctuation_1='!"#$%&()*+,–—./:;<=>?@[\\]^_`{|}~”“…\n'
@@ -15,14 +16,19 @@ puncTTable = dict.fromkeys(map(ord, punctuation_1), " ")
 for c in punctuation_2:
     puncTTable[ord(c)]=None
 
+s = requests.session()
+s.headers.update({'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', 'DNT':'1', 'Accept-Language':'en-US,en:1=0.5', 'Referer':'https://archiveofourown.org/works'})
+s.cookies.update({'view_adult':'true'})
+
 #put the suffix of the fic here
-ficLink = "/works/45479821/chapters/114431764"
-Fic = requests.get(site+ficLink)
+site="https://archiveofourown.org"
+ficLink = "/works/56064253/chapters/142397071"
+Fic = s.get(site+ficLink)
 soup = BS(Fic.text, "html.parser")
 
 class fic:
     def __init__(self,ficLink):
-        soup = BS(requests.get("https://archiveofourown.org"+ficLink).text, "html.parser")
+        soup = BS(s.get(site+ficLink).text, "html.parser")
 
         #titles and authors
         self.title = soup.find('h2').text.replace("\n",'').strip()
@@ -141,14 +147,31 @@ def chapterWords():
             output = output.replace(c,"")
     return (len(output.split())-2) #because the find function takes 2 extra words
 
+def chapterWords2():
+    not_result=[0]
+    result=[0]
+    chapter = soup.find('div',attrs={"class":"userstuff module"}).findAll('p')
+
+    for para in chapter:
+        output = para.text.lower()
+        not_result[0]+=len(output.split())
+        #getting rid of punctuations
+        for c in punctuation_1:
+            output = output.replace(c," ")
+        for c in punctuation_2:
+            output = output.replace(c,"")
+        result.append(len(output.split()))
+    return (result, sum(result)) #for debugging
+    #return (len(output.split())) #because the find function takes 2 extra words
+
 def WordFreq(ficLink):
-    Fic = requests.get(site+ficLink)
+    Fic = s.get(site+ficLink)
     soup = BS(Fic.text, "html.parser")
     freq={}
     print("1")
     while findNext(soup) != None:
         print("2")
-        Fic = requests.get(site+ficLink)
+        Fic = s.get(site+ficLink)
         soup = BS(Fic.text, "html.parser")
         chapter = soup.find('div',attrs={"class":"userstuff module"})
         output = chapter.text
@@ -186,22 +209,30 @@ def graphBar(dic,title,xLab,counts):
 if __name__ == "__main__":
     counts=[]
     puncs={}
-
-
-    title= soup.find('h2').text.replace("\n",'').strip()
+    fic_deets=fic(ficLink)
+    title = fic_deets.title
+    chapters = fic_deets.chapters
 
     while findNext(ficLink) != None:
-        Fic = requests.get(site+ficLink)
-        soup = BS(Fic.text, "html.parser")
+        print(f"Number of chapters remaining: {chapters}")
+        
+        FIC=s.get(site+ficLink)
+        while FIC.ok == False:
+            FIC=s.get(site+ficLink)
+            
+        soup = BS(FIC.text, "html.parser")
+        
         counts.append(chapterWords())
         ficLink = findNext(ficLink)
+        chapters-=1
+
 
     plt.style.use('classic')
     plt.rcParams["figure.dpi"] = 150
     plt.tight_layout(pad=2.5)
     plt.plot([i for i in range(1,len(counts)+1)],counts, color="#12ACAE")
-    plt.xlim(1, len(counts)+1)
-    plt.ylim(0, max(counts)+2000)
+    plt.xlim(1, len(counts)+2)
+    plt.ylim(0, sorted(counts)[-1]+1000)
     plt.title(title)
     
     plt.xlabel('Chapter')
