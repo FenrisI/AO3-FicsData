@@ -17,7 +17,11 @@ for c in punctuation_2:
     puncTTable[ord(c)]=None
 
 s = requests.session()
-s.headers.update({'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0', 'DNT':'1', 'Accept-Language':'en-US,en:1=0.5', 'Referer':'https://archiveofourown.org/works'})
+s.headers.update({
+    'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0',
+    'DNT':'1',
+    'Accept-Language':'en-US,en:1=0.5',
+    'Referer':'https://archiveofourown.org/works'})
 s.cookies.update({'view_adult':'true'})
 
 #put the suffix of the fic here
@@ -218,8 +222,11 @@ if __name__ == "__main__":
         
         FIC=s.get(site+ficLink)
         while FIC.ok == False:
-            FIC=s.get(site+ficLink)
-            
+            if Fic.status_code in [400,401,402,403,404,405] :
+                break
+            else:
+                FIC=s.get(site+ficLink)
+           
         soup = BS(FIC.text, "html.parser")
         
         counts.append(chapterWords())
