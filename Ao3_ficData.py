@@ -211,23 +211,22 @@ if __name__ == "__main__":
     puncs={}
     fic_deets=fic(ficLink)
     title = fic_deets.title
+    chapters = fic_deets.chapters
 
     while findNext(ficLink) != None:
+        print(f"Number of chapters remaining: {chapters}")
         
-        t=time.time()
-        print("....")
         FIC=s.get(site+ficLink)
-        print(FIC.status_code)
         while FIC.ok == False:
             FIC=s.get(site+ficLink)
+            
         soup = BS(FIC.text, "html.parser")
-
+        
         counts.append(chapterWords())
         ficLink = findNext(ficLink)
-        print(time.time()-t)
+        chapters-=1
 
 
-    print(counts)
     plt.style.use('classic')
     plt.rcParams["figure.dpi"] = 150
     plt.tight_layout(pad=2.5)
