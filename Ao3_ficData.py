@@ -23,7 +23,7 @@ s.cookies.update({'view_adult': 'true'})
 
 # put the suffix of the fic here
 site = "https://archiveofourown.org"
-ficLink = "/works/56064253/chapters/142397071"
+ficLink = "/works/54890437/chapters/139139398"
 FIC = s.get(site+ficLink)
 soup = BS(FIC.text, "html.parser")
 
@@ -172,7 +172,9 @@ def chapterWords():
     return (len(output.split())-2)
 
 
-'''def chapterWords2():
+'''depracated
+
+def chapterWords2():
     not_result = [0]
     result = [0]
     chapter = soup.find(
@@ -243,9 +245,11 @@ if __name__ == "__main__":
     title = fic_deets.title
     chapters = fic_deets.chapters
 
-    print(getChapLinks(ficLink))
+    FIC=get(ficLink)
 
-    '''while findNext(ficLink) != None:
+    '''print(getChapLinks(ficLink))'''
+    st=time.time()
+    while findNext(ficLink) != None:
         print(f"Number of chapters remaining: {chapters}")
         
         FIC=get(ficLink)
@@ -256,7 +260,7 @@ if __name__ == "__main__":
         counts.append(chapterWords())
         ficLink = findNext(ficLink)
         chapters-=1
-
+    print(time.time()-st)
 
     plt.style.use('classic')
     plt.rcParams["figure.dpi"] = 150
@@ -271,4 +275,4 @@ if __name__ == "__main__":
     plt.grid()
     plt.savefig(f"{title}_{len(counts)}.png")
 
-    plt.show()'''
+    plt.show()
