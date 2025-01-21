@@ -245,31 +245,30 @@ if __name__ == "__main__":
     title = fic_deets.title
     chapters = fic_deets.chapters
 
-    FIC=get(ficLink)
+    FIC = get(ficLink)
 
     '''print(getChapLinks(ficLink))'''
-    st=time.time()
+    st = time.time()
     while findNext(ficLink) != None:
         print(f"Number of chapters remaining: {chapters}")
-        
-        FIC=get(ficLink)
 
-            
+        FIC = get(ficLink)
+
         soup = BS(FIC.text, "html.parser")
-        
+
         counts.append(chapterWords())
         ficLink = findNext(ficLink)
-        chapters-=1
+        chapters -= 1
     print(time.time()-st)
 
     plt.style.use('classic')
     plt.rcParams["figure.dpi"] = 150
     plt.tight_layout(pad=2.5)
-    plt.plot([i for i in range(1,len(counts)+1)],counts, color="#12ACAE")
+    plt.plot([i for i in range(1, len(counts)+1)], counts, color="#12ACAE")
     plt.xlim(1, len(counts)+2)
     plt.ylim(0, sorted(counts)[-1]+1000)
     plt.title(title)
-    
+
     plt.xlabel('Chapter')
     plt.ylabel('Words')
     plt.grid()
