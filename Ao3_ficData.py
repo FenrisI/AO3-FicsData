@@ -1,4 +1,6 @@
 from bs4 import BeautifulSoup as BS
+import asyncio
+import aiohttp
 import requests
 import matplotlib
 import matplotlib.pyplot as plt
@@ -23,7 +25,8 @@ s.cookies.update({'view_adult': 'true'})
 
 # put the suffix of the fic here
 site = "https://archiveofourown.org"
-ficLink = "/works/54890437/chapters/139139398"
+# Leidenschaft:/works/58203763/chapters/148205701
+ficLink = "/works/58203763/chapters/148205701"
 FIC = s.get(site+ficLink)
 soup = BS(FIC.text, "html.parser")
 
@@ -275,3 +278,4 @@ if __name__ == "__main__":
     plt.savefig(f"{title}_{len(counts)}.png")
 
     plt.show()
+    input()
