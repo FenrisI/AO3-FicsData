@@ -1,22 +1,24 @@
-from bs4 import BeautifulSoup as BS
-import asyncio
-import aiohttp
-import requests
-import matplotlib
-import matplotlib.pyplot as plt
-from pandas import DataFrame
-import string
 import time
+import string
+import matplotlib.pyplot as plt
+import matplotlib
+import requests
+from bs4 import BeautifulSoup as BS
+# import asyncio
+# import aiohttp
+import os
+import json
 
-
+CACHE_FILE = "temp.json"
 punctuation_1 = '!"#$%&()*+,–—./:;<=>?@[\\]^_`{|}~”“…\n'
 punctuation_2 = "-'‘’\xa0\t"
 
+'''the following could be used for preprocessing in the word count function via the translate meathod
 letters = "abcdefghijklmnopqrstuvwxyz1234567890"
 letterTTable = dict.fromkeys(map(ord, letters), None)
 puncTTable = dict.fromkeys(map(ord, punctuation_1), " ")
 for c in punctuation_2:
-    puncTTable[ord(c)] = None
+    puncTTable[ord(c)] = None'''
 
 s = requests.session()
 s.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0',
@@ -29,23 +31,6 @@ site = "https://archiveofourown.org"
 ficLink = "/works/58203763/chapters/148205701"
 FIC = s.get(site+ficLink)
 soup = BS(FIC.text, "html.parser")
-
-
-def get(ficLink):
-    FIC = s.get(site+ficLink)
-
-    while FIC.ok == False:
-
-        if FIC.status_code in [404]:
-            break
-        elif FIC.status_code == 429:
-            print("waiting...")
-            time.sleep(5)
-            FIC = s.get(site+ficLink)
-        else:
-            print("Retrying...")
-            FIC = s.get(site+ficLink)
-    return FIC
 
 
 class fic:
@@ -154,15 +139,38 @@ class fic:
         self.hits = int(
             soup.find('dd', attrs={"class": "hits"}).text.replace(',', ''))
 
+        # TODO: Add all links and stuff on the page
+        self.chapterLinks = getChapLinks(ficLink)
+
+
+def get(ficLink):
+    FIC = s.get(site+ficLink)
+
+    while FIC.ok == False:
+
+        if FIC.status_code in [404]:
+            print("The link provided does not lead to a fanfic")
+            return "a"
+        elif FIC.status_code == 429:
+            print("Rate limit reached waiting for a bit...")
+            time.sleep(100)
+            FIC = s.get(site+ficLink)
+        else:
+            i = 2
+            print(f"Error {FIC.status_code} occured. Retrying...")
+            FIC = s.get(site+ficLink)
+    return FIC
 
 # traversing through the chapters
+
+
 def findNext(ficLink):
     for i in soup.findAll('a'):
         if "Next Chapter →" in i:
             return i.get('href')
 
 
-def chapterWords():
+def chapterWords(soup):
     chapter = soup.find('div', attrs={"class": "userstuff module"})
     output = chapter.text
     output = output.lower()
@@ -171,29 +179,8 @@ def chapterWords():
         output = output.replace(c, " ")
     for c in punctuation_2:
         output = output.replace(c, "")
-    # because the find function takes 2 extra words
+    # because the find function takes in 2 extra unseen words
     return (len(output.split())-2)
-
-
-'''depracated
-
-def chapterWords2():
-    not_result = [0]
-    result = [0]
-    chapter = soup.find(
-        'div', attrs={"class": "userstuff module"}).findAll('p')
-
-    for para in chapter:
-        output = para.text.lower()
-        not_result[0] += len(output.split())
-        # getting rid of punctuations
-        for c in punctuation_1:
-            output = output.replace(c, " ")
-        for c in punctuation_2:
-            output = output.replace(c, "")
-        result.append(len(output.split()))
-    return (result, sum(result))  # for debugging
-    # return (len(output.split())) #because the find function takes 2 extra words'''
 
 
 def WordFreq(ficLink):
@@ -231,51 +218,71 @@ def PunctuationFrequency():
 
 
 def getChapLinks(ficLink):
+    links = {}
     ficLinkComps = ficLink.split("/")
     indexLink = "/" + ficLinkComps[1] + "/" + ficLinkComps[2] + "/navigate"
     index = s.get(site+indexLink)
     soup = BS(index.text, "html.parser")
 
-    links = list(map(lambda x: x.get('href'), soup.find('ol').findAll('a')))
-
+    linkList = list(map(lambda x: x.get('href'), soup.find('ol').findAll('a')))
+    for i in range(1, len(linkList)+1):
+        links[f'{i}'] = linkList[i-1]
     return links
 
 
+def getWordCounts(ficLink, fic) -> dict:
+    cache = {}
+    if os.path.exists(CACHE_FILE) and os.path.getsize(CACHE_FILE) > 0:
+        try:
+            with open(CACHE_FILE, "r") as f:
+                cache = json.load(f)
+        except json.decoder.JSONDecodeError:
+            print(
+                f"Warning: Invalid JSON in {CACHE_FILE}. Starting with empty cache.")
+
+    fic_title = fic.title
+    if fic_title not in cache:
+        cache[fic_title] = {}
+
+    for i in range(1, fic.chapters+1):
+        chapter_key = str(i)
+        if chapter_key in cache[fic_title]:
+            continue
+        else:
+            res = get(fic.chapterLinks[chapter_key])
+            soup = BS(res.text, "html.parser")
+            cache[fic_title][chapter_key] = chapterWords(
+                soup)
+
+    with open(CACHE_FILE, "w") as f:
+        json.dump(cache, f, indent=4)
+
+    return cache[fic_title]
+
+
 if __name__ == "__main__":
-    counts = []
-    puncs = {}
-    fic_deets = fic(ficLink)
-    title = fic_deets.title
-    chapters = fic_deets.chapters
+    print("main start")
+    Fic = fic(ficLink)
+    title = Fic.title
+    chapters = Fic.chapters
 
-    FIC = get(ficLink)
-
-    '''print(getChapLinks(ficLink))'''
     st = time.time()
-    while findNext(ficLink) != None:
-        print(f"Number of chapters remaining: {chapters}")
-
-        FIC = get(ficLink)
-
-        soup = BS(FIC.text, "html.parser")
-
-        counts.append(chapterWords())
-        ficLink = findNext(ficLink)
-        chapters -= 1
+    counts = getWordCounts(ficLink, Fic)
     print(time.time()-st)
 
-    plt.style.use('classic')
+    plt.style.use('bmh')
+    plt.figure(figsize=(12, 6))
     plt.rcParams["figure.dpi"] = 150
-    plt.tight_layout(pad=2.5)
-    plt.plot([i for i in range(1, len(counts)+1)], counts, color="#12ACAE")
-    plt.xlim(1, len(counts)+2)
-    plt.ylim(0, sorted(counts)[-1]+1000)
+    plt.plot([x for x in range(1, len(counts)+1)], counts.values(),
+             color="#12ACAE", marker='o', linestyle='-')
+    plt.xlim(0.84, len(counts)+1)
+    plt.ylim(1, sorted(list(counts.values()))[-1]+1000)
     plt.title(title)
 
     plt.xlabel('Chapter')
     plt.ylabel('Words')
-    plt.grid()
+    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.tight_layout()
     plt.savefig(f"{title}_{len(counts)}.png")
 
-    plt.show()
-    input()
+plt.show()
