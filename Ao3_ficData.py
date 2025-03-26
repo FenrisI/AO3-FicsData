@@ -144,7 +144,10 @@ class fic:
 
 
 def get(ficLink):
-    FIC = s.get(site+ficLink)
+    if ficLink.split("/")[1] == "works":
+        FIC = s.get(site+ficLink)
+    else:
+        FIC = s.get(ficLink)
 
     while FIC.ok == False:
 
