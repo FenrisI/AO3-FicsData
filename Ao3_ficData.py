@@ -220,7 +220,10 @@ def PunctuationFrequency():
 def getChapLinks(ficLink):
     links = {}
     ficLinkComps = ficLink.split("/")
-    indexLink = "/" + ficLinkComps[1] + "/" + ficLinkComps[2] + "/navigate"
+    if ficLinkComps[1] == "works":
+        indexLink = "/" + ficLinkComps[1] + "/" + ficLinkComps[2] + "/navigate"
+    else:
+        indexLink = "/" + ficLinkComps[3] + "/" + ficLinkComps[4] + "/navigate"
     index = s.get(site+indexLink)
     soup = BS(index.text, "html.parser")
 
