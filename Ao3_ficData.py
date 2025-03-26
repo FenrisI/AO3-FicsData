@@ -1,10 +1,7 @@
-import time
 import string
 import matplotlib.pyplot as plt
 import requests
 from bs4 import BeautifulSoup as BS
-# import asyncio
-# import aiohttp
 import os
 import json
 
@@ -132,7 +129,7 @@ class fic:
             soup.find('dd', attrs={"class": "hits"}).text.replace(',', ''))
 
         '''links'''
-        self.chapterLinks = getChapLinks(ficLink)
+        self.chapterLinks = getChapterLinks(ficLink)
 
         '''dunder methods'''
 
@@ -175,23 +172,16 @@ def chapterWords(soup) -> int:
 
 
 def chapterWordFrequency(soup) -> dict:
-    soup = BS(Fic.text, "html.parser")
     frequency = {}
-    print("1")
-    while findNext(soup) != None:
-        print("2")
-        Fic = s.get(site+ficLink)
-        soup = BS(Fic.text, "html.parser")
-        chapter = soup.find('div', attrs={"class": "userstuff module"})
-        chapter = chapter.text
-        chapter = chapter.lower()
-        chapter = chapter.translate(punctuationTable)
-        for i in chapter.split():
-            if i in frequency:
-                frequency[i] += 1
-            else:
-                frequency[i] = 1
-        ficLink = findNext(soup)
+    chapter = soup.find('div', attrs={"class": "userstuff module"})
+    chapter = chapter.text
+    chapter = chapter.lower()
+    chapter = chapter.translate(punctuationTable)
+    for i in chapter.split():
+        if i in frequency:
+            frequency[i] += 1
+        else:
+            frequency[i] = 1
     frequency["chapter"] -= 1
     frequency["text"] -= 1
     return frequency
@@ -211,7 +201,7 @@ def chapterPunctuationFrequency(soup) -> dict:
     return frequency
 
 
-def getChapLinks(ficLink) -> dict:
+def getChapterLinks(ficLink) -> dict:
     links = {}
     ficLinkComps = ficLink.split("/")
     if ficLinkComps[1] == "works":
