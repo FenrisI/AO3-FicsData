@@ -1,9 +1,15 @@
-import string
-import matplotlib.pyplot as plt
-import requests
-from bs4 import BeautifulSoup as BS
 import os
 import json
+import time
+import string
+import requests
+import matplotlib.pyplot as plt
+from bs4 import BeautifulSoup as BS
+
+'''TODO[
+    Async requests to get stuff faster
+    Save the data using the fic ids instead of their name to allow multiple fics with same name to be saved simultaneously
+]'''
 
 CACHE_FILE = "cache.json"
 HEADERS = {'User-Agent': 'Web scraper for scraping meta data from fics (https://github.com/FenrisI/AO3-FicsData)',
@@ -17,7 +23,7 @@ LETTERS = "abcdefghijklmnopqrstuvwxyz1234567890"
 SITE = "https://archiveofourown.org"
 
 # creating translation tables for text parsing
-letterTable = dict.fromkeys(map(ord, letters), None)
+letterTable = dict.fromkeys(map(ord, LETTERS), None)
 punctuationTable = dict.fromkeys(map(ord, PUNCTUATION_1), " ")
 for c in PUNCTUATION_2:
     punctuationTable[ord(c)] = None
@@ -139,7 +145,7 @@ class fic:
 
 def get(ficLink) -> requests.models.Response:
     if ficLink.split("/")[1] == "works":
-        FIC = s.get(site+ficLink)
+        FIC = s.get(SITE+ficLink)
     else:
         FIC = s.get(ficLink)
 
@@ -151,11 +157,11 @@ def get(ficLink) -> requests.models.Response:
         elif FIC.status_code == 429:
             print("Rate limit reached waiting for a bit...")
             time.sleep(100)
-            FIC = s.get(site+ficLink)
+            FIC = s.get(SITE+ficLink)
         else:
             i = 2
             print(f"Error {FIC.status_code} occured. Retrying...")
-            FIC = s.get(site+ficLink)
+            FIC = s.get(SITE+ficLink)
     return FIC
 
 
@@ -208,7 +214,7 @@ def getChapterLinks(ficLink) -> dict:
         indexLink = "/" + ficLinkComps[1] + "/" + ficLinkComps[2] + "/navigate"
     else:
         indexLink = "/" + ficLinkComps[3] + "/" + ficLinkComps[4] + "/navigate"
-    index = s.get(site+indexLink)
+    index = s.get(SITE+indexLink)
     soup = BS(index.text, "html.parser")
 
     linkList = list(map(lambda x: x.get('href'), soup.find('ol').findAll('a')))
@@ -217,7 +223,7 @@ def getChapterLinks(ficLink) -> dict:
     return links
 
 
-def getWordCounts(ficLink, fic) -> dict:
+def getWordCounts(fic) -> dict:
     cache = {}
     if os.path.exists(CACHE_FILE) and os.path.getsize(CACHE_FILE) > 0:
         try:
@@ -249,6 +255,7 @@ def getWordCounts(ficLink, fic) -> dict:
 
 
 if __name__ == "__main__":
+
     s = requests.session()
     s.headers.update(HEADERS)
     s.cookies.update(COOKIES)
@@ -259,20 +266,23 @@ if __name__ == "__main__":
     Fic = fic(ficLink)
     title = Fic.title
     chapters = Fic.chapters
+    chapterLinks = Fic.chapterLinks
 
-    counts = getWordCounts(ficLink, Fic)
+    counts = getWordCounts(Fic)
+    print(counts)
+    s.close()
 
     plt.style.use('bmh')
     plt.figure(figsize=(12, 6))
     plt.rcParams["figure.dpi"] = 150
     plt.plot([x for x in range(1, len(counts)+1)], counts.values(),
-             color="#12ACAE", marker='o', linestyle='-')
-    plt.xlim(0.84, len(counts)+1)
+             color="#12ACAE", marker='o', linestyle='-', )
+    plt.xlim(0.8, len(counts)+1)
     plt.ylim(1, sorted(list(counts.values()))[-1]+1000)
     plt.title(title)
-
     plt.xlabel('Chapter')
     plt.ylabel('Words')
+    plt.xticks([x for x in range(0, len(counts)+5, 5)])
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.tight_layout()
     plt.savefig(f"{title}_{len(counts)}.png")
