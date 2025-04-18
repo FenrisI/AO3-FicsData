@@ -1,0 +1,5 @@
+[console_scripts]
+shiny = shiny._main:main
+
+[pytest11]
+shiny-test = shiny.pytest._pytest

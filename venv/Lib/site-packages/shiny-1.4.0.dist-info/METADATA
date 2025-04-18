@@ -1,0 +1,218 @@
+Metadata-Version: 2.4
+Name: shiny
+Version: 1.4.0
+Summary: A web development framework for Python.
+Author-email: Winston Chang <winston@posit.co>
+License: MIT
+Project-URL: Homepage, https://github.com/posit-dev/py-shiny
+Project-URL: Documentation, https://shiny.posit.co/py/
+Project-URL: Repository, https://github.com/posit-dev/py-shiny
+Project-URL: Bug Tracker, https://github.com/posit-dev/py-shiny/issues
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Natural Language :: English
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: typing-extensions>=4.10.0
+Requires-Dist: uvicorn>=0.16.0; platform_system != "Emscripten"
+Requires-Dist: starlette
+Requires-Dist: websockets>=13.0
+Requires-Dist: htmltools>=0.6.0
+Requires-Dist: click>=8.1.4; platform_system != "Emscripten"
+Requires-Dist: markdown-it-py>=1.1.0
+Requires-Dist: mdit-py-plugins>=0.3.0
+Requires-Dist: linkify-it-py>=1.0
+Requires-Dist: appdirs>=1.4.4
+Requires-Dist: asgiref>=3.5.2
+Requires-Dist: packaging>=20.9
+Requires-Dist: watchfiles>=0.18.0; platform_system != "Emscripten"
+Requires-Dist: questionary>=2.0.0; platform_system != "Emscripten"
+Requires-Dist: prompt-toolkit; platform_system != "Emscripten"
+Requires-Dist: python-multipart>=0.0.7; platform_system != "Emscripten"
+Requires-Dist: setuptools; python_version >= "3.12"
+Requires-Dist: narwhals>=1.10.0
+Requires-Dist: orjson>=3.10.7
+Provides-Extra: theme
+Requires-Dist: libsass>=0.23.0; extra == "theme"
+Requires-Dist: brand_yml>=0.1.0; extra == "theme"
+Provides-Extra: test
+Requires-Dist: pytest>=6.2.4; extra == "test"
+Requires-Dist: pytest-asyncio>=0.17.2; extra == "test"
+Requires-Dist: pytest-playwright>=0.3.0; extra == "test"
+Requires-Dist: playwright>=1.43.0; extra == "test"
+Requires-Dist: pytest-xdist; extra == "test"
+Requires-Dist: pytest-timeout; extra == "test"
+Requires-Dist: pytest-rerunfailures; extra == "test"
+Requires-Dist: pytest-cov; extra == "test"
+Requires-Dist: coverage; extra == "test"
+Requires-Dist: syrupy>=4.7.1; extra == "test"
+Requires-Dist: psutil; extra == "test"
+Requires-Dist: astropy; extra == "test"
+Requires-Dist: suntime; extra == "test"
+Requires-Dist: timezonefinder; platform_system != "Windows" and extra == "test"
+Requires-Dist: ipyleaflet; extra == "test"
+Requires-Dist: shinywidgets; extra == "test"
+Requires-Dist: seaborn; extra == "test"
+Requires-Dist: plotnine; extra == "test"
+Requires-Dist: plotly; extra == "test"
+Requires-Dist: anywidget; extra == "test"
+Requires-Dist: duckdb; extra == "test"
+Requires-Dist: holoviews; extra == "test"
+Requires-Dist: bokeh; extra == "test"
+Requires-Dist: xarray; extra == "test"
+Requires-Dist: geopandas; extra == "test"
+Requires-Dist: geodatasets; extra == "test"
+Requires-Dist: missingno; extra == "test"
+Requires-Dist: rsconnect-python; extra == "test"
+Requires-Dist: scikit-learn; extra == "test"
+Requires-Dist: folium; extra == "test"
+Requires-Dist: palmerpenguins; extra == "test"
+Requires-Dist: faicons; extra == "test"
+Requires-Dist: ridgeplot; extra == "test"
+Requires-Dist: great_tables; extra == "test"
+Requires-Dist: modin[all]; extra == "test"
+Requires-Dist: polars; extra == "test"
+Requires-Dist: dask[dataframe]; extra == "test"
+Requires-Dist: pyarrow; extra == "test"
+Requires-Dist: pyarrow-stubs; extra == "test"
+Provides-Extra: dev
+Requires-Dist: black>=24.0; extra == "dev"
+Requires-Dist: flake8>=6.0.0; extra == "dev"
+Requires-Dist: flake8-bugbear>=23.2.13; extra == "dev"
+Requires-Dist: Flake8-pyproject>=1.2.3; extra == "dev"
+Requires-Dist: isort>=5.10.1; extra == "dev"
+Requires-Dist: libsass>=0.23.0; extra == "dev"
+Requires-Dist: brand_yml>=0.1.0; extra == "dev"
+Requires-Dist: pyright>=1.1.398; extra == "dev"
+Requires-Dist: pre-commit>=2.15.0; extra == "dev"
+Requires-Dist: wheel; extra == "dev"
+Requires-Dist: matplotlib; extra == "dev"
+Requires-Dist: pandas; extra == "dev"
+Requires-Dist: pandas-stubs; extra == "dev"
+Requires-Dist: polars; extra == "dev"
+Requires-Dist: numpy; extra == "dev"
+Requires-Dist: shinyswatch>=0.7.0; extra == "dev"
+Requires-Dist: python-dotenv; extra == "dev"
+Requires-Dist: anthropic; extra == "dev"
+Requires-Dist: google-generativeai; python_version >= "3.9" and extra == "dev"
+Requires-Dist: langchain_core; extra == "dev"
+Requires-Dist: langsmith<0.3; extra == "dev"
+Requires-Dist: openai; extra == "dev"
+Requires-Dist: ollama; extra == "dev"
+Requires-Dist: chatlas>=0.6.1; extra == "dev"
+Requires-Dist: tokenizers; extra == "dev"
+Requires-Dist: aiohttp; extra == "dev"
+Requires-Dist: beautifulsoup4; extra == "dev"
+Provides-Extra: doc
+Requires-Dist: jupyter; extra == "doc"
+Requires-Dist: jupyter_client<8.0.0; extra == "doc"
+Requires-Dist: tabulate; extra == "doc"
+Requires-Dist: shinylive; extra == "doc"
+Requires-Dist: pydantic>=2.7.4; extra == "doc"
+Requires-Dist: quartodoc>=0.8.1; extra == "doc"
+Requires-Dist: griffe>=1.3.2; extra == "doc"
+Dynamic: license-file
+
+# Shiny for Python
+
+[![PyPI Latest Release](https://img.shields.io/pypi/v/shiny.svg)](https://pypi.org/project/shiny/)
+[![Build status](https://img.shields.io/github/actions/workflow/status/posit-dev/py-shiny/pytest.yaml?branch=main)](https://img.shields.io/github/actions/workflow/status/posit-dev/py-shiny/pytest.yaml?branch=main)
+[![Conda Latest Release](https://anaconda.org/conda-forge/shiny/badges/version.svg)](https://anaconda.org/conda-forge/shiny)
+[![Supported Python versions](https://img.shields.io/pypi/pyversions/shiny)](https://pypi.org/project/shiny/)
+[![License](https://img.shields.io/github/license/posit-dev/py-shiny)](https://github.com/posit-dev/py-shiny/blob/main/LICENSE)
+
+Shiny for Python is the best way to build fast, beautiful web applications in Python. You can build quickly with Shiny and create simple interactive visualizations and prototype applications in an afternoon. But unlike other frameworks targeted at data scientists, Shiny does not limit your app's growth. Shiny remains extensible enough to power large, mission-critical applications.
+
+To learn more about Shiny see the [Shiny for Python website](https://shiny.posit.co/py/). If you're new to the framework we recommend these resources:
+
+- How [Shiny is different](https://posit.co/blog/why-shiny-for-python/) from Dash and Streamlit.
+
+- How [reactive programming](https://shiny.posit.co/py/docs/reactive-programming.html) can help you build better applications.
+
+- How to [use modules](https://shiny.posit.co/py/docs/workflow-modules.html) to efficiently develop large applications.
+
+- Hosting applications for free on [shinyapps.io](https://shiny.posit.co/py/docs/deploy.html#deploy-to-shinyapps.io-cloud-hosting), [Hugging Face](https://shiny.posit.co/blog/posts/shiny-on-hugging-face/), or [Shinylive](https://shiny.posit.co/py/docs/shinylive.html).
+
+## Join the conversation
+
+If you have questions about Shiny for Python, or want to help us decide what to work on next, [join us on Discord](https://discord.gg/yMGCamUMnS).
+
+## Getting started
+
+To get started with shiny follow the [installation instructions](https://shiny.posit.co/py/docs/install-create-run.html) or just install it from pip.
+
+```sh
+pip install shiny
+```
+
+To install the latest development version:
+
+```sh
+# First install htmltools, then shiny
+pip install git+https://github.com/posit-dev/py-htmltools.git#egg=htmltools
+pip install git+https://github.com/posit-dev/py-shiny.git#egg=shiny
+```
+
+You can create and run your first application with `shiny create`, the CLI will ask you which template you would like to use. You can either run the app with the Shiny extension, or call `shiny run app.py --reload --launch-browser`.
+
+## Development
+
+* Shinylive built from the `main` branch: https://posit-dev.github.io/py-shiny/shinylive/py/examples/
+* API documentation for the `main` branch:
+    * https://posit-dev.github.io/py-shiny/docs/api/express/
+    * https://posit-dev.github.io/py-shiny/docs/api/core/
+
+If you are working from a fork you may not have the git tags from the original repo.
+Git tags are required for the install to succeed. To add tags to your own fork:
+
+```sh
+git remote add upstream https://github.com/posit-dev/py-shiny.git
+git fetch --tags upstream
+```
+
+Then install:
+
+```sh
+pip install -e ".[dev,test,doc]"
+```
+
+Additionally, you can install pre-commit hooks which will automatically reformat and lint the code when you make a commit:
+
+```sh
+pre-commit install
+
+# To disable:
+# pre-commit uninstall
+```
+
+Tests should now pass:
+
+```sh
+make check
+# To apply formatting fixes instead of erroring:
+# make check-fix
+```
+
+Or get a full list of helpers with just:
+
+```sh
+make
+```
+
+Typically, when developing new features for Shiny, you'll want to try them out in an application.
+In a **separate** application directory, use can use `-e` to reference your local checkout of `py-shiny`:
+
+```sh
+# Rather than
+#   pip install shiny
+# run:
+pip install -e ../py-shiny --config-settings editable_mode=compat
+```
+
+See the [docs README](docs/README.md) for instructions on building the documentation locally.

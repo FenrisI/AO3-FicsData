@@ -30,7 +30,7 @@ for c in PUNCTUATION_2:
 
 
 class fic:
-    def __init__(self, ficLink):
+    def __init__(self, s, ficLink):
         soup = BS(get(ficLink).text, "html.parser")
 
         '''metadata'''
@@ -252,6 +252,11 @@ def getWordCounts(fic) -> dict:
         json.dump(cache, f, indent=4)
 
     return cache[fic_title]
+
+
+def getFicID(ficLink: string):
+    components = ficLink.split("/")
+    return components[4]
 
 
 if __name__ == "__main__":
