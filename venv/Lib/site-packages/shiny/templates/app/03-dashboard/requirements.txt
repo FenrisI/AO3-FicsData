@@ -1,4 +1,0 @@
-faicons
-shiny
-seaborn
-pandas

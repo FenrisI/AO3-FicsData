@@ -2,9 +2,12 @@ import os
 import json
 import time
 import string
+from textParsing import *
+from dataRetrieve import *
 import requests
 import matplotlib.pyplot as plt
 from bs4 import BeautifulSoup as BS
+
 
 '''TODO[
     Async requests to get stuff faster
@@ -17,21 +20,13 @@ HEADERS = {'User-Agent': 'Web scraper for scraping meta data from fics (https://
            'Accept-Language': 'en-US,en:1=0.5',
            'Referer': 'https://archiveofourown.org/works'}
 COOKIES = {'view_adult': 'true'}
-PUNCTUATION_1 = '!"#$%&()*+,–—./:;<=>?@[\\]^_`{|}~”“…\n'
-PUNCTUATION_2 = "-'‘’\xa0\t"
-LETTERS = "abcdefghijklmnopqrstuvwxyz1234567890"
-SITE = "https://archiveofourown.org"
 
-# creating translation tables for text parsing
-letterTable = dict.fromkeys(map(ord, LETTERS), None)
-punctuationTable = dict.fromkeys(map(ord, PUNCTUATION_1), " ")
-for c in PUNCTUATION_2:
-    punctuationTable[ord(c)] = None
+SITE = "https://archiveofourown.org"
 
 
 class fic:
-    def __init__(self, s, ficLink):
-        soup = BS(get(ficLink).text, "html.parser")
+    def __init__(self,  session, ficLink):
+        soup = BS(get(session, ficLink).text, "html.parser")
 
         '''metadata'''
         # titles and authors
@@ -135,92 +130,12 @@ class fic:
             soup.find('dd', attrs={"class": "hits"}).text.replace(',', ''))
 
         '''links'''
-        self.chapterLinks = getChapterLinks(ficLink)
+        self.chapterLinks = getChapterLinks(session, ficLink)
 
         '''dunder methods'''
 
         def __str__(self):
             "{} by {}".format(self.title, self.author)
-
-
-def get(ficLink) -> requests.models.Response:
-    if ficLink.split("/")[1] == "works":
-        FIC = s.get(SITE+ficLink)
-    else:
-        FIC = s.get(ficLink)
-
-    while FIC.ok == False:
-
-        if FIC.status_code in [404]:
-            print("The link provided does not lead to a fanfic")
-            return "a"
-        elif FIC.status_code == 429:
-            print("Rate limit reached waiting for a bit...")
-            time.sleep(100)
-            FIC = s.get(SITE+ficLink)
-        else:
-            i = 2
-            print(f"Error {FIC.status_code} occured. Retrying...")
-            FIC = s.get(SITE+ficLink)
-    return FIC
-
-
-def chapterWords(soup) -> int:
-    chapter = soup.find('div', attrs={"class": "userstuff module"})
-    chapter = chapter.text
-    chapter = chapter.lower()
-    # getting rid of punctuations
-    chapter.translate(punctuationTable)
-    # because the find function takes in 2 extra unseen words
-    wordCount = len(chapter.split()) - 2
-
-    return wordCount
-
-
-def chapterWordFrequency(soup) -> dict:
-    frequency = {}
-    chapter = soup.find('div', attrs={"class": "userstuff module"})
-    chapter = chapter.text
-    chapter = chapter.lower()
-    chapter = chapter.translate(punctuationTable)
-    for i in chapter.split():
-        if i in frequency:
-            frequency[i] += 1
-        else:
-            frequency[i] = 1
-    frequency["chapter"] -= 1
-    frequency["text"] -= 1
-    return frequency
-
-
-def chapterPunctuationFrequency(soup) -> dict:
-    frequency = {}
-    chapter = soup.find('div', attrs={"class": "userstuff module"})
-    chapter = chapter.text.lower()
-    chapter = chapter.translate(letterTable)
-    for i in chapter:
-        if i in frequency:
-            frequency[i] += 1
-        else:
-            frequency[i] = 1
-
-    return frequency
-
-
-def getChapterLinks(ficLink) -> dict:
-    links = {}
-    ficLinkComps = ficLink.split("/")
-    if ficLinkComps[1] == "works":
-        indexLink = "/" + ficLinkComps[1] + "/" + ficLinkComps[2] + "/navigate"
-    else:
-        indexLink = "/" + ficLinkComps[3] + "/" + ficLinkComps[4] + "/navigate"
-    index = s.get(SITE+indexLink)
-    soup = BS(index.text, "html.parser")
-
-    linkList = list(map(lambda x: x.get('href'), soup.find('ol').findAll('a')))
-    for i in range(1, len(linkList)+1):
-        links[f'{i}'] = linkList[i-1]
-    return links
 
 
 def getWordCounts(fic) -> dict:
@@ -261,21 +176,21 @@ def getFicID(ficLink: string):
 
 if __name__ == "__main__":
 
-    s = requests.session()
-    s.headers.update(HEADERS)
-    s.cookies.update(COOKIES)
+    session = requests.session()
+    session.headers.update(HEADERS)
+    session.cookies.update(COOKIES)
 
     # NOTE Change the link here to the one for the fic you want the graph for
     ficLink = "https://archiveofourown.org/works/58203763/chapters/148881631"
 
-    Fic = fic(ficLink)
+    Fic = fic(session, ficLink)
     title = Fic.title
     chapters = Fic.chapters
     chapterLinks = Fic.chapterLinks
 
     counts = getWordCounts(Fic)
     print(counts)
-    s.close()
+    session.close()
 
     plt.style.use('bmh')
     plt.figure(figsize=(12, 6))
@@ -290,6 +205,6 @@ if __name__ == "__main__":
     plt.xticks([x for x in range(0, len(counts)+5, 5)])
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.tight_layout()
-    plt.savefig(f"{title}_{len(counts)}.png")
+    plt.savefig(f"graphs/{title}_{len(counts)}.png")
 
     plt.show()
