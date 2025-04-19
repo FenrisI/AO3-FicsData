@@ -4,7 +4,7 @@ import string
 PUNCTUATION_1 = '!"#$%&()*+,–—./:;<=>?@[\\]^_`{|}~”“…\n'
 PUNCTUATION_2 = "-'‘’\xa0\t"
 LETTERS = "abcdefghijklmnopqrstuvwxyz1234567890"
-# creating translation tables for text parsing
+# creating translation t`ables for text parsing
 letterTable = dict.fromkeys(map(ord, LETTERS), None)
 punctuationTable = dict.fromkeys(map(ord, PUNCTUATION_1), " ")
 for c in PUNCTUATION_2:

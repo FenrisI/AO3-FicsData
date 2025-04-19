@@ -14,7 +14,7 @@ from bs4 import BeautifulSoup as BS
     Save the data using the fic ids instead of their name to allow multiple fics with same name to be saved simultaneously
 ]'''
 
-CACHE_FILE = "cache.json"
+CACHE_FILE = "./cache/cache.json"
 HEADERS = {'User-Agent': 'Web scraper for scraping meta data from fics (https://github.com/FenrisI/AO3-FicsData)',
            'DNT': '1',
            'Accept-Language': 'en-US,en:1=0.5',
