@@ -1,23 +1,20 @@
-from Ao3_ficData import *
+# from Ao3_ficData import *
+from textParsing import *
+# from dataRetrieve import *
+from work import *
+from constants import *
 
 
-if __name__ == "__main__":
-    ses = requests.Session()
-    ses.headers.update(HEADERS)
-    ses.cookies.update(COOKIES)
-    chapters = {}
-    ficLink = "https://archiveofourown.org/works/58203763/chapters/148881631"
+ses = requests.Session()
+ses.headers.update(HEADERS)
+ses.cookies.update(COOKIES)
+chapters = {}
+workID = "58203763"
+print("AAAAAAAAAAA")
 
-    x = time.time()
-    res = ses.get(f"{SITE}/works/{getFicID(ficLink)}?view_full_work=true")
-    print(time.time()-x)
+x = time.time()
+fic = work(ses, workID)
+with open(CACHE_FILE, '+w') as cache:
+    cache.write(fic)
 
-    print(getFicID(ficLink))
-    print(res.status_code)
-    soup = BS(res.text, "html.parser")
-
-    x = time.time()
-    fic(ses, ficLink)
-    print(time.time()-x)
-
-    ses.close()
+print(time.time()-x)

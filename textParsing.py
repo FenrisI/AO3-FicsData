@@ -51,3 +51,8 @@ def chapterPunctuationFrequency(soup) -> dict:
             frequency[i] = 1
 
     return frequency
+
+
+def getFicID(ficLink: string):
+    components = ficLink.split("/")
+    return components[4]

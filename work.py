@@ -1,32 +1,9 @@
-import os
-import json
-import time
-import string
-from textParsing import *
 from dataRetrieve import *
-import requests
-import matplotlib.pyplot as plt
-from bs4 import BeautifulSoup as BS
 
 
-'''TODO[
-    Async requests to get stuff faster
-    Save the data using the fic ids instead of their name to allow multiple fics with same name to be saved simultaneously
-]'''
-
-CACHE_FILE = "./cache/cache.json"
-HEADERS = {'User-Agent': 'Web scraper for scraping meta data from fics (https://github.com/FenrisI/AO3-FicsData)',
-           'DNT': '1',
-           'Accept-Language': 'en-US,en:1=0.5',
-           'Referer': 'https://archiveofourown.org/works'}
-COOKIES = {'view_adult': 'true'}
-
-SITE = "https://archiveofourown.org"
-
-
-class fic:
-    def __init__(self,  session, ficLink):
-        soup = BS(getWork(session, ficLink).text, "html.parser")
+class work:
+    def __init__(self,  session, workID):
+        soup = getWork(session, workID)
 
         '''metadata'''
         # titles and authors
@@ -82,7 +59,8 @@ class fic:
             pass
 
         # language
-        self.language = soup.find('dd', attrs={"class": "language"}).text
+        self.language = soup.find(
+            'dd', attrs={"class": "language"}).text.strip()
 
         '''stats'''
         # publish date
@@ -130,76 +108,9 @@ class fic:
             soup.find('dd', attrs={"class": "hits"}).text.replace(',', ''))
 
         '''links'''
-        self.chapterLinks = getChapterLinks(session, ficLink)
+        self.chapter_links = getChapterLinks(session, workID)
 
         '''dunder methods'''
 
         def __str__(self):
             "{} by {}".format(self.title, self.author)
-
-
-def getWordCounts(fic) -> dict:
-    cache = {}
-    if os.path.exists(CACHE_FILE) and os.path.getsize(CACHE_FILE) > 0:
-        try:
-            with open(CACHE_FILE, "r") as f:
-                cache = json.load(f)
-        except json.decoder.JSONDecodeError:
-            print(
-                f"Warning: Invalid JSON in {CACHE_FILE}. Starting with empty cache.")
-
-    fic_title = fic.title
-    if fic_title not in cache:
-        cache[fic_title] = {}
-
-    for i in range(1, fic.chapters+1):
-        chapter_key = str(i)
-        if chapter_key in cache[fic_title]:
-            print(f"Chapter {i} is in cache")
-            continue
-        else:
-            res = get(fic.chapterLinks[chapter_key])
-            soup = BS(res.text, "html.parser")
-            print(f"Chapter {i} is not in cache. Fetching word count...")
-            cache[fic_title][chapter_key] = chapterWords(soup)
-
-    with open(CACHE_FILE, "w") as f:
-        json.dump(cache, f, indent=4)
-
-    return cache[fic_title]
-
-
-if __name__ == "__main__":
-
-    session = requests.session()
-    session.headers.update(HEADERS)
-    session.cookies.update(COOKIES)
-
-    # NOTE Change the link here to the one for the fic you want the graph for
-    ficLink = "https://archiveofourown.org/works/58203763/chapters/148881631"
-
-    Fic = fic(session, ficLink)
-    title = Fic.title
-    chapters = Fic.chapters
-    chapterLinks = Fic.chapterLinks
-
-    counts = getWordCounts(Fic)
-    print(counts)
-    session.close()
-
-    plt.style.use('bmh')
-    plt.figure(figsize=(12, 6))
-    plt.rcParams["figure.dpi"] = 150
-    plt.plot([x for x in range(1, len(counts)+1)], counts.values(),
-             color="#12ACAE", marker='o', linestyle='-', )
-    plt.xlim(0.8, len(counts)+1)
-    plt.ylim(1, sorted(list(counts.values()))[-1]+1000)
-    plt.title(title)
-    plt.xlabel('Chapter')
-    plt.ylabel('Words')
-    plt.xticks([x for x in range(0, len(counts)+5, 5)])
-    plt.grid(True, linestyle='--', alpha=0.6)
-    plt.tight_layout()
-    plt.savefig(f"graphs/{title}_{len(counts)}.png")
-
-    plt.show()
