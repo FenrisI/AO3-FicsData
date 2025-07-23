@@ -69,9 +69,38 @@ def chapterPunctuationFrequency(soup) -> dict:
 
     return frequency
 
+def workWords(soup) -> list[int]:
+    chapters = soup.find_all('div', attrs={"class": "userstuff module"})
+    word_count=[]
+    for chapter in chapters:
+        chapter = chapter.text
+        chapter = chapter.lower()
+        # getting rid of punctuations
+        chapter.translate(punctuationTable)
+        # because the find function takes in 2 extra unseen words
+        word_count.append(len(chapter.split()) - 2)
 
-def getFicID(ficLink: string):
-    components = ficLink.split("/")
+    return word_count
+
+
+def workWordFrequency(soup) -> dict:
+    frequency = {}
+    chapter = soup.find('div', attrs={"class": "userstuff module"})
+    chapter = chapter.text
+    chapter = chapter.lower()
+    chapter = chapter.translate(punctuationTable)
+    for i in chapter.split():
+        if i in frequency:
+            frequency[i] += 1
+        else:
+            frequency[i] = 1
+    frequency["chapter"] -= 1
+    frequency["text"] -= 1
+    return frequency
+
+
+def getWorkID(workLink: string):
+    components = workLink.split("/")
     return components[4]
 
 
@@ -94,8 +123,6 @@ def get(session: requests.Session, Link: str, retry: int = 3) -> requests.models
 
 def getWork(session: requests.Session, workID: str) -> BS:
     completeWorkLink = SITE + "/works/" + workID + "?view_full_work=true"
-    print("\n"+workID)
-    print(completeWorkLink)
     res = get(session, completeWorkLink)
     try: 
         workSoup = BS(res.text, "html.parser")
@@ -122,6 +149,7 @@ class work:
         if soup == None:
             return None
         '''metadata'''
+        self.soup = str(soup)
         # titles and authors
         self.title = soup.find('h2').text.replace("\n", '').strip()
 
@@ -134,26 +162,32 @@ class work:
 
         # warnings
         self.warnings = []
-        for i in soup.find('dd', attrs={"class": "warning tags"}).findAll('li'):
-            self.warnings.append(i.text)
+        try: 
+            for i in soup.find('dd', attrs={"class": "warning tags"}).find_all('li'):
+                self.warnings.append(i.text)
+        except AttributeError:
+            pass
 
         # category
         self.categories = []
         try:
-            for i in soup.find('dd', attrs={"class": "category tags"}).findAll('li'):
+            for i in soup.find('dd', attrs={"class": "category tags"}).find_all('li'):
                 self.categories.append(i.text)
         except AttributeError:
             pass
 
         # fandom
         self.fandom = []
-        for i in soup.find('dd', attrs={"class": "fandom tags"}).findAll('li'):
-            self.fandom.append(i.text)
+        try:
+            for i in soup.find('dd', attrs={"class": "fandom tags"}).find_all('li'):
+                self.fandom.append(i.text)
+        except:
+            pass
 
         # relationships
         self.relationships = []
         try:
-            for i in soup.find('dd', attrs={"class": "relationships tags"}).findAll('li'):
+            for i in soup.find('dd', attrs={"class": "relationships tags"}).find_all('li'):
                 self.relationships.append(i.text)
         except AttributeError:
             pass
@@ -161,7 +195,7 @@ class work:
         # characters
         self.characters = []
         try:
-            for i in soup.find('dd', attrs={"class": "character tags"}).findAll('li'):
+            for i in soup.find('dd', attrs={"class": "character tags"}).find_all('li'):
                 self.characters.append(i.text)
         except AttributeError:
             pass
@@ -169,19 +203,25 @@ class work:
         # additional tags
         self.additional_tags = []
         try:
-            for i in soup.find('dd', attrs={"class": "freeform tags"}).findAll('li'):
+            for i in soup.find('dd', attrs={"class": "freeform tags"}).find_all('li'):
                 self.additional_tags.append(i.text)
         except AttributeError:
             pass
 
         # language
-        self.language = soup.find(
-            'dd', attrs={"class": "language"}).text.strip()
+        self.langauge=''
+        try:
+            self.language = soup.find(
+                'dd', attrs={"class": "language"}).text.strip()
+        except AttributeError:
+            pass
 
         '''stats'''
         # publish date
-        self.publish_date = soup.find('dd', attrs={"class": "published"}).text
-
+        try:
+            self.publish_date = soup.find('dd', attrs={"class": "published"}).text
+        except AttributeError:
+            self.publish_date = ''
         # last updated
         try:
             self.last_update = soup.find('dd', attrs={"class": "status"}).text
@@ -189,13 +229,17 @@ class work:
             self.last_update = None
 
         # words
-        words = soup.find('dd', attrs={"class": "words"})
-        self.words = int(words.text.replace(',', ''))
-
+        try:
+            words = soup.find('dd', attrs={"class": "words"})
+            self.words = int(words.text.replace(',', ''))
+        except AttributeError:
+            self.words=0
         # chapter count
-        chapters = soup.find('dd', attrs={"class": "chapters"})
-        self.chapters = int(chapters.text.split('/')[0].replace(',', ''))
-
+        try:
+            chapters = soup.find('dd', attrs={"class": "chapters"})
+            self.chapters = int(chapters.text.split('/')[0].replace(',', ''))
+        except AttributeError:
+            self.chapters=0
         # comments
         try:
             comments = soup.find('dd', attrs={"class": "comments"})
@@ -220,12 +264,16 @@ class work:
             self.bookmarks = 0
 
         # hits
-        self.hits = int(
-            soup.find('dd', attrs={"class": "hits"}).text.replace(',', ''))
-
+        try:
+            self.hits = int(
+                soup.find('dd', attrs={"class": "hits"}).text.replace(',', ''))
+        except AttributeError:
+            self.hits = 0
         '''links'''
-        self.chapter_links = getChapterLinks(session, workID)
-
+        try:
+            self.chapter_links = getChapterLinks(session, workID)
+        except AttributeError:
+            self.chapter_links = {}
         '''dunder methods'''
 
         def __str__(self):
@@ -242,8 +290,31 @@ if __name__ == "__main__" :
     session.cookies.update(COOKIES)
 
 
-    ficlink = input("Enter the link for the fic:")
-    ficID = getFicID(ficlink)
-    print(ficID)
-    fic = work(session, ficID)
-    print(fic.chapter_links)
+    worklink = "https://archiveofourown.org/works/58203763"
+    workID = getWorkID(worklink)
+    work = work(session, workID)
+
+    workSoup=BS(work.soup,"html.parser")
+
+    with open(f"{workID}.cache", 'w') as f:
+        f.write(work.soup)
+
+    count = workWords(workSoup)
+    counts={}
+    for i,c in enumerate(count):
+        counts[i+1] = c
+
+    plt.style.use('bmh')
+    plt.figure(figsize=(12, 6))
+    plt.rcParams["figure.dpi"] = 150
+    plt.plot([x for x in range(1, len(counts)+1)], counts.values(),
+             color="#12ACAE", marker='o', linestyle='-')
+    plt.xlim(0.8, len(counts)+1)
+    plt.ylim(1, sorted(list(counts.values()))[-1]+1000)
+    plt.title(work.title)
+    plt.xlabel('Chapter')
+    plt.ylabel('Words')
+    plt.xticks([x for x in range(0, len(counts)+5, 5)])
+    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.tight_layout()
+    plt.savefig(f"{workID}.png")

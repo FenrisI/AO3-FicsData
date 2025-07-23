@@ -1,6 +1,8 @@
 *.png
 *.json
 *.pyc
+*.png
+*.txt
 
 tests.py
 
@@ -8,3 +10,4 @@ tests.py
 __pycache__/
 graph/
 cache/
+
