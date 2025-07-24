@@ -1,3 +1,13 @@
 *.png
 *.json
 *.pyc
+*.png
+*.txt
+
+tests.py
+
+.venv/
+__pycache__/
+graph/
+cache/
+
