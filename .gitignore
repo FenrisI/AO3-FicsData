@@ -2,12 +2,15 @@
 *.json
 *.pyc
 *.png
-*.txt
-
+*.cache
+*.swp
+.gitignore
 tests.py
+punctuations.txt
 
+.*/
 .venv/
 __pycache__/
 graph/
 cache/
-
+plots/
