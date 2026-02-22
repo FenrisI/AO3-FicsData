@@ -9,8 +9,8 @@ import scrapper
 from work import Work
 
 # 1. Setup Theme
-ctk.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
-ctk.set_default_color_theme("dark-blue")  # Themes: "blue" (standard), "green", "dark-blue"
+ctk.set_appearance_mode("Dark")
+ctk.set_default_color_theme("dark-blue")
 
 class AO3AnalyticsApp(ctk.CTk):
     def __init__(self, session: requests.Session):
@@ -20,7 +20,7 @@ class AO3AnalyticsApp(ctk.CTk):
         self.session = session
 
         # Window Setup
-        self.title("AO3 Analytics Tool 📊")
+        self.title("AO3 Analytics Tool")
         self.geometry("1280x720")
         
         # Grid Layout
@@ -78,18 +78,13 @@ class AO3AnalyticsApp(ctk.CTk):
         try:
             # --- STEP 1: SCRAPE ---
             # Initialize Work (this runs the scraper)
-            fic = Work(self.session, url)
-            fic.fetch_data()
-            # Update Status
-            self.update_status(f"Found: {fic.title} (Chapters: {fic.chapters})")
-            
-            # --- STEP 2: ANALYZE ---
-            # Calculate stats (you might need to ensure Work calls this internally or here)
-            # Assuming Work.__init__ or Work.calculate_stats() populates the data
-            if not hasattr(fic, 'chapter_word_counts'):
-                    fic.calculate_stats()
+            work = Work(self.session, url)
+            work.fetch_data()
 
-            # --- STEP 3: PLOT ---
+            # Update Status
+            self.update_status(f"Found: {work.title} (Chapters: {work.chapters})")
+
+            # --- STEP 2: PLOT ---
             should_show = self.check_show_var.get()
             should_save = self.check_save_var.get()
             
@@ -97,22 +92,23 @@ class AO3AnalyticsApp(ctk.CTk):
             # handles popups okay from threads. Ideally, we schedule this back.
             # For now, let's just call the plotter functions.
             
-            # # A. Word Counts per Chapter
-            # save_name = f"{fic.title}_counts.png" if should_save else None
-            # if should_show or should_save:
-            #     plotter.plot_chapter_word_counts(fic.chapter_word_counts, save_to=save_name)
+            # A. Word Counts per Chapter
+            save_name = f"{work.title}_counts.png" if should_save else None
+            if should_show or should_save:
+                plotter.plot_chapter_word_counts(work.chapter_word_counts, save_to=save_name)
             
-            # # B. Cumulative Word Count
-            # save_name = f"{fic.title}_growth.png" if should_save else None
-            # if should_show or should_save:
-            #     plotter.plot_cumulative_word_counts(fic.chapter_word_counts, save_to=save_name)
+            # B. Cumulative Word Count
+            save_name = f"{work.title}_growth.png" if should_save else None
+            if should_show or should_save:
+                plotter.plot_cumulative_word_counts(work.chapter_word_counts, save_to=save_name)
             
             # C. Top used words
-            save_name = f"{fic.title}_word_frequency.png" if should_save else None
+            save_name = f"{work.title}_word_frequency.png" if should_save else None
             if should_show or should_save:
-                plotter.plot_top_words(analytics.filter_frequency(fic.work_word_frequency), 15, save_name)
+                plotter.plot_top_words(analytics.filter_frequency(work.word_frequency), 30, save_name)
 
-            self.update_status(f"Analysis Complete for '{fic.title}'!")
+            self.update_status(f"Analysis Complete for '{work.title}'!")
+            print(work.word_frequency)
 
         except Exception as e:
             self.update_status(f"Error: {str(e)}")

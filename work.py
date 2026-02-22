@@ -8,9 +8,9 @@ class ResponseError(Exception):
 
 class Work:
 
-    def __init__(self,  session, work_id):
+    def __init__(self,  session: requests.Session, work_id: str):
         self.session = session
-        self.work_id = work_id
+        self.work_id = str(work_id)
         self.soup = None
         self.title = None
         self.author = None
@@ -35,7 +35,7 @@ class Work:
         self.chapter_punctuation_frequencies = None
         self.punctuation_frequency = None
         self.chapter_word_frequencies = None
-        self.work_word_frequency = None
+        self.word_frequency = None
         
     def fetch_data(self):
         soup = get_work(self.session, self.work_id)
@@ -86,7 +86,7 @@ class Work:
         try:
             for i in soup.find('dd', attrs={"class": "relationships tags"}).find_all('li'):
                 self.relationships.append(i.text)
-        except AttributeError:
+        except Exception:
             pass
 
         # characters
@@ -174,15 +174,13 @@ class Work:
             self.chapter_links = get_chapter_links(self.session, self.work_id)
         except AttributeError:
             self.chapter_links = {}
-    
-    def calculate_stats(self):
-        soup: BeautifulSoup = BS(self.soup, "html.parser")
+        
         self.chapter_word_counts: dict[int, int] = chapter_word_counts(soup)
         self.chapter_punctuation_frequencies: FrequencyMap = chapter_punctuation_frequency(soup)
         self.punctuation_frequency: FrequencyMap = work_punctuation_frequency(self.chapter_punctuation_frequencies)
         self.chapter_word_frequencies: FrequencyMap = chapter_word_frequency(soup)
-        self.work_word_frequency: FrequencyMap = work_word_frequency(self.chapter_word_frequencies)
-
+        self.word_frequency: FrequencyMap = work_word_frequency(self.chapter_word_frequencies)
+    
     '''dunder methods'''
     def __str__(self):
         return "{} by {}".format(self.title, self.author)
@@ -192,6 +190,6 @@ if __name__ == "__main__":
     session = requests.Session()
     COOKIES = {'view_adult': 'true'}
     session.cookies.update(COOKIES)
-    w = Work(session, 54890437)
+    w = Work(session, "54890437")
     w.fetch_data()
     w.calculate_stats()
